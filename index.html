@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>IPTV Email Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f3ff;
+      padding: 20px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #6b21a8;
+    }
+    textarea {
+      width: 100%;
+      height: 60px;
+      margin-bottom: 10px;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #6b21a8;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #581c87;
+    }
+    #output {
+      margin-top: 20px;
+      white-space: pre-wrap;
+      background: #f9f9f9;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 12px;
+    }
+    .copy-btn {
+      margin-top: 10px;
+      background: #10b981;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>IPTV Email Generator</h1>
+
+  <textarea id="m3u1" placeholder="M3U Link 1"></textarea>
+  <textarea id="m3u2" placeholder="M3U Link 2 (optional)"></textarea>
+  <textarea id="m3u3" placeholder="M3U Link 3 (optional)"></textarea>
+
+  <button onclick="generate()">Generate Email</button>
+
+  <button class="copy-btn" onclick="copyHTML()">Copy HTML</button>
+
+  <div id="output"></div>
+</div>
+
+<script>
+function extract(url) {
+  try {
+    const u = new URL(url);
+    return {
+      username: u.searchParams.get("username"),
+      password: u.searchParams.get("password")
+    };
+  } catch {
+    return null;
+  }
+}
+
+function createBlock(i, data, link) {
+  return `
+<strong style="color:#6b21a8;">Compte ${i}</strong><br><br>
+
+<strong>Code actif :</strong>
+<div style="background:#f9f9f9; padding:10px; border-radius:6px;">${data.username}</div><br>
+
+<strong>URL M3U :</strong>
+<div style="background:#f9f9f9; padding:10px; border-radius:6px; word-break:break-all;">${link}</div><br>
+
+<strong>Nom d'utilisateur :</strong>
+<div style="background:#f9f9f9; padding:8px; border-radius:6px;">${data.username}</div><br>
+
+<strong>Mot de passe :</strong>
+<div style="background:#f9f9f9; padding:8px; border-radius:6px;">${data.password}</div>
+
+<hr style="margin:25px 0; border:none; border-top:1px solid #eee;">
+`;
+}
+
+function generate() {
+  const inputs = [
+    document.getElementById("m3u1").value,
+    document.getElementById("m3u2").value,
+    document.getElementById("m3u3").value
+  ].filter(x => x);
+
+  let blocks = "";
+
+  inputs.forEach((link, index) => {
+    const data = extract(link);
+    if (data) {
+      blocks += createBlock(index + 1, data, link);
+    }
+  });
+
+  const html = `
+<div style="font-family: Arial, sans-serif; background-color:#f5f3ff; padding:20px;">
+  <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:10px; overflow:hidden; border:1px solid #e5e5e5;">
+    
+    <div style="background:#6b21a8; color:#ffffff; padding:20px; text-align:center;">
+      <strong style="font-size:18px;">ATLAS PRO</strong><br>
+      <span style="font-size:14px;">Abonnement 12 Mois - ${inputs.length} Écran(s)</span>
+    </div>
+
+    <div style="padding:20px; color:#333;">
+      ${blocks}
+
+      <strong style="color:#6b21a8;">Serveurs</strong><br><br>
+
+<strong>HOST 1 URL :</strong>
+<div style="background:#f9f9f9; padding:8px; border-radius:6px;">http://ap4ko.net/</div><br>
+
+<strong>HOST 2 URL (Smart TV LG/Samsung - IPTV Smarters Pro) :</strong>
+<div style="background:#f9f9f9; padding:8px; border-radius:6px;">http://apsmart.in:80</div>
+
+      <hr style="margin:25px 0; border:none; border-top:1px solid #eee;">
+
+      <div style="text-align:center;">
+        Support disponible à tout moment.<br><br>
+        <strong style="color:#6b21a8;">Profitez de votre expérience Atlas Pro !</strong>
+      </div>
+
+    </div>
+  </div>
+</div>
+`;
+
+  document.getElementById("output").textContent = html;
+}
+
+// FIXED COPY FUNCTION (works everywhere)
+function copyHTML() {
+  const text = document.getElementById("output").textContent;
+
+  if (!text) {
+    alert("Nothing to copy!");
+    return;
+  }
+
+  // Try modern clipboard API first
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text)
+      .then(() => alert("Copied!"))
+      .catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+}
+
+// Fallback method (works on HTTP, mobile, etc.)
+function fallbackCopy(text) {
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  textarea.setSelectionRange(0, 99999);
+
+  try {
+    document.execCommand("copy");
+    alert("Copied!");
+  } catch (err) {
+    alert("Copy failed. Please copy manually.");
+  }
+
+  document.body.removeChild(textarea);
+}
+</script>
+
+</body>
+</html>
