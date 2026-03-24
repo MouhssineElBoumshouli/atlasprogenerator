@@ -38,6 +38,7 @@
       border-radius: 6px;
       font-size: 16px;
       cursor: pointer;
+      margin-bottom: 5px;
     }
     button:hover {
       background: #581c87;
@@ -50,9 +51,18 @@
       border-radius: 6px;
       font-size: 12px;
     }
+    #preview {
+      margin-top: 20px;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 6px;
+      background: #ffffff;
+    }
     .copy-btn {
-      margin-top: 10px;
       background: #10b981;
+    }
+    .preview-btn {
+      background: #3b82f6;
     }
   </style>
 </head>
@@ -65,11 +75,12 @@
   <textarea id="m3u2" placeholder="M3U Link 2 (optional)"></textarea>
   <textarea id="m3u3" placeholder="M3U Link 3 (optional)"></textarea>
 
-  <button onclick="generate()">Generate Email</button>
-
+  <button onclick="generate()">Generate HTML Email</button>
+  <button class="preview-btn" onclick="previewEmail()">Preview Email</button>
   <button class="copy-btn" onclick="copyHTML()">Copy HTML</button>
 
   <div id="output"></div>
+  <div id="preview"></div>
 </div>
 
 <script>
@@ -105,6 +116,8 @@ function createBlock(i, data, link) {
 `;
 }
 
+let lastHtml = '';
+
 function generate() {
   const inputs = [
     document.getElementById("m3u1").value,
@@ -121,7 +134,7 @@ function generate() {
     }
   });
 
-  const html = `
+  lastHtml = `
 <div style="font-family: Arial, sans-serif; background-color:#f5f3ff; padding:20px;">
   <div style="max-width:600px; margin:auto; background:#ffffff; border-radius:10px; overflow:hidden; border:1px solid #e5e5e5;">
     
@@ -153,19 +166,26 @@ function generate() {
 </div>
 `;
 
-  document.getElementById("output").textContent = html;
+  document.getElementById("output").textContent = lastHtml;
+  document.getElementById("preview").innerHTML = '';
 }
 
-// FIXED COPY FUNCTION (works everywhere)
-function copyHTML() {
-  const text = document.getElementById("output").textContent;
+function previewEmail() {
+  if (!lastHtml) {
+    alert('Please generate the email first!');
+    return;
+  }
+  document.getElementById("preview").innerHTML = lastHtml;
+}
 
-  if (!text) {
-    alert("Nothing to copy!");
+function copyHTML() {
+  if (!lastHtml) {
+    alert('Please generate the email first!');
     return;
   }
 
-  // Try modern clipboard API first
+  const text = lastHtml;
+
   if (navigator.clipboard && window.isSecureContext) {
     navigator.clipboard.writeText(text)
       .then(() => alert("Copied!"))
@@ -175,7 +195,6 @@ function copyHTML() {
   }
 }
 
-// Fallback method (works on HTTP, mobile, etc.)
 function fallbackCopy(text) {
   const textarea = document.createElement("textarea");
   textarea.value = text;
